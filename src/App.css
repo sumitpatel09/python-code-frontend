@@ -1,3 +1,4 @@
+
 :root {
   --bg: #f9f9f9;
   --text: #222;
@@ -204,4 +205,121 @@ input[type="file"] {
   margin-bottom: 0.2rem;
   user-select: text;
 }
+.terminal-editable {
+  min-height: 200px;
+  background: #1e1e1e;
+  color: #dcdcdc;
+  padding: 1rem;
+  border-radius: 5px;
+  white-space: pre-wrap;
+  outline: none;
+  font-family: monospace;
+  overflow-y: auto;
+}
 
+
+.terminal-output {
+  background-color: #1e1e1e;
+  color: #d4d4d4;
+  padding: 10px;
+  height: 200px;
+  overflow-y: auto;
+  font-family: monospace;
+  white-space: pre-wrap;
+  border: 1px solid #333;
+  margin-bottom: 5px;
+}
+
+.terminal-input {
+  width: 100%;
+  padding: 8px;
+  font-family: monospace;
+  font-size: 14px;
+  border: 1px solid #333;
+  background-color: #1e1e1e;
+  color: #d4d4d4;
+  outline: none;
+}
+/* Tabs bar container */
+.tabs-bar {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  overflow-x: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--accent) transparent;
+}
+
+.tabs-bar::-webkit-scrollbar {
+  height: 6px;
+}
+
+.tabs-bar::-webkit-scrollbar-thumb {
+  background-color: var(--accent);
+  border-radius: 3px;
+}
+
+/* Individual tab */
+.tab {
+  display: flex;
+  align-items: center;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  padding: 0.3rem 0.7rem;
+  border-radius: 5px 5px 0 0;
+  cursor: pointer;
+  white-space: nowrap;
+  user-select: none;
+  transition: background-color 0.2s ease;
+  position: relative;
+}
+
+.tab:hover {
+  background: var(--accent);
+  color: rgb(101, 92, 217);
+}
+
+.tab.active {
+  font-weight: 600;
+  border-bottom: 3px solid var(--accent);
+  background: var(--accent);
+  color: rgb(215, 122, 122);
+  cursor: default;
+}
+
+/* Close icon on tab */
+.tab .close-icon {
+  margin-left: 8px;
+  font-weight: bold;
+  cursor: pointer;
+  color: var(--error);
+  font-size: 1rem;
+  user-select: none;
+  line-height: 1;
+  transition: color 0.2s ease;
+}
+
+.tab .close-icon:hover {
+  color: #ff0000;
+}
+
+/* New file button tab */
+.tab.new-file-btn {
+  background: var(--accent);
+  color: white;
+  font-weight: bold;
+  padding: 0 12px;
+  border-radius: 5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  user-select: none;
+  border: 1px solid var(--border);
+  transition: background-color 0.2s ease;
+}
+
+.tab.new-file-btn:hover {
+  background: #005fbb;
+  color: white;
+}
