@@ -176,7 +176,7 @@ function App() {
             <input type="file" accept=".py" onChange={handleFileUpload} />
           </label>
         </div>
-        <button onClick={addFile}>➕ Add File</button>
+        <button onClick={addFile}>➕</button>
       </div>
 
       <Editor
