@@ -16,6 +16,7 @@ function App() {
   const [input, setInput] = useState("");
   const [terminalOutput, setTerminalOutput] = useState("");
   const [loading, setLoading] = useState(false);
+  const [theme, setTheme] = useState(() => localStorage.getItem("theme") || "dark");
 
   const currentCode = files[entryFile] || "";
 
@@ -26,6 +27,11 @@ function App() {
   useEffect(() => {
     localStorage.setItem("entryFile", entryFile);
   }, [entryFile]);
+
+  useEffect(() => {
+    localStorage.setItem("theme", theme);
+    document.documentElement.setAttribute("data-theme", theme);
+  }, [theme]);
 
   useEffect(() => {
     const id = searchParams.get("id");
@@ -151,9 +157,18 @@ function App() {
     reader.readAsText(file);
   };
 
+  const toggleTheme = () => {
+    setTheme((prev) => (prev === "dark" ? "light" : "dark"));
+  };
+
   return (
     <div id="playground-container">
-      <h1>🐍 Python IDE</h1>
+      <div className="header">
+        <h1>🐍 Python IDE</h1>
+        <button className="theme-toggle" onClick={toggleTheme}>
+          {theme === "dark" ? "🌞 Light" : "🌙 Dark"}
+        </button>
+      </div>
 
       <div className="tabs-bar">
         <div className="tab add-tab" onClick={addFile}>+</div>
@@ -174,10 +189,10 @@ function App() {
 
       <Editor
         height="300px"
-        defaultLanguage="python"
+        language="python"
         value={currentCode}
         onChange={(val) => updateFile(entryFile, val)}
-        theme="vs-dark"
+        theme={theme === "dark" ? "vs-dark" : "light"}
       />
 
       <div className="input-line">
