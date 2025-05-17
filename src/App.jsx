@@ -142,14 +142,6 @@ function App() {
     const reader = new FileReader();
     reader.onload = (event) => {
       let filename = file.name.endsWith(".py") ? file.name : `${file.name}.py`;
-
-      let base = filename;
-      let count = 1;
-      while (files[filename]) {
-        filename = base.replace(/(\.py)?$/, `_${count}.py`);
-        count++;
-      }
-
       const content = event.target.result;
       setFiles((prev) => ({ ...prev, [filename]: content }));
       setEntryFile(filename);
@@ -157,61 +149,64 @@ function App() {
     reader.readAsText(file);
   };
 
-  const toggleTheme = () => {
-    setTheme((prev) => (prev === "dark" ? "light" : "dark"));
-  };
-
   return (
     <div id="playground-container">
-      <div className="header">
-        <h1>🐍 Python IDE</h1>
-        <button className="theme-toggle" onClick={toggleTheme}>
-          {theme === "dark" ? "🌞 Light" : "🌙 Dark"}
+      <div className="header-bar">
+        <h2>🐍 Python Online IDE</h2>
+        <button onClick={() => setTheme((prev) => (prev === "dark" ? "light" : "dark"))}>
+          Toggle {theme === "dark" ? "Light" : "Dark"} Mode
         </button>
       </div>
 
       <div className="tabs-bar">
-        <div className="tab add-tab" onClick={addFile}>+</div>
-
         {Object.keys(files).map((filename) => (
-          <div key={filename} className={`tab ${filename === entryFile ? "active" : ""}`}>
-            <button className="tab-button" onClick={() => switchFile(filename)}>{filename}</button>
-            <button className="rename-button" title="Rename" onClick={() => renameFile(filename)}>✏️</button>
-            <button className="close-button" onClick={() => removeFile(filename)}>×</button>
+          <div
+            key={filename}
+            className={`tab ${filename === entryFile ? "active" : ""}`}
+            onClick={() => switchFile(filename)}
+          >
+            {filename}
+            <button className="rename-button" title="Rename" onClick={(e) => { e.stopPropagation(); renameFile(filename); }}>✏️</button>
+            <button className="rename-button" title="Delete" onClick={(e) => { e.stopPropagation(); removeFile(filename); }}>❌</button>
           </div>
         ))}
-
-        <label className="upload-tab" title="Upload File">
-          📄
-          <input type="file" accept=".txt,.py" style={{ display: "none" }} onChange={handleFileUpload} />
-        </label>
+        <div className="tab upload-tab">
+          <label>
+            📂 Upload
+            <input type="file" accept=".py" onChange={handleFileUpload} />
+          </label>
+        </div>
+        <button onClick={addFile}>➕ Add File</button>
       </div>
 
       <Editor
-        height="300px"
-        language="python"
-        value={currentCode}
-        onChange={(val) => updateFile(entryFile, val)}
+        height="400px"
+        defaultLanguage="python"
         theme={theme === "dark" ? "vs-dark" : "light"}
+        value={currentCode}
+        onChange={(value) => updateFile(entryFile, value)}
       />
 
-      <div className="input-line">
-        <label>💬 Simulated Terminal Input:</label>
+      <div className="input-section">
+        <label htmlFor="input">Input (stdin):</label>
         <textarea
-          rows={3}
-          placeholder="Enter simulated input() values here..."
+          rows="4"
           value={input}
           onChange={(e) => setInput(e.target.value)}
+          placeholder="Enter input for your code (if needed)"
         />
       </div>
 
       <div className="buttons-row">
-        <button onClick={runCode} disabled={loading}>▶️ Run Code</button>
-        <button onClick={clearOutput}>🧹 Clear</button>
+        <button onClick={runCode} disabled={loading}>
+          ▶️ {loading ? "Running..." : "Run Code"}
+        </button>
+        <button onClick={clearOutput}>🧹 Clear Output</button>
         <button onClick={shareCode}>🔗 Share</button>
       </div>
 
-      <div className="terminal">
+      <div className="output-panel">
+        <h4>Terminal Output</h4>
         <pre>{terminalOutput}</pre>
       </div>
     </div>
