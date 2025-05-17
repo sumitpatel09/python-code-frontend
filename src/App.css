@@ -1,39 +1,44 @@
 :root {
-  --bg: #fff;
-  --text: #000;
-  --panel: #f0f0f0;
-  --border: #ccc;
+  --bg: #f9f9f9;
+  --text: #222;
+  --panel: #fff;
+  --border: #ddd;
+  --accent: dodgerblue;
 }
 
 [data-theme='dark'] {
   --bg: #121212;
-  --text: #ffffff;
+  --text: #f1f1f1;
   --panel: #1e1e1e;
-  --border: #333;
+  --border: #444;
+  --accent: deepskyblue;
 }
 
 body {
   margin: 0;
-  font-family: sans-serif;
+  font-family: 'Inter', sans-serif;
   background: var(--bg);
   color: var(--text);
 }
 
 #playground-container {
   padding: 1rem;
+  max-width: 1200px;
+  margin: auto;
 }
 
 .header-bar {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  margin-bottom: 1rem;
 }
 
 .tabs-bar {
   display: flex;
-  gap: 5px;
-  margin: 1rem 0;
+  gap: 6px;
   flex-wrap: wrap;
+  overflow-x: auto;
 }
 
 .tab {
@@ -41,17 +46,27 @@ body {
   align-items: center;
   background: var(--panel);
   border: 1px solid var(--border);
-  padding: 0.2rem 0.5rem;
+  padding: 0.3rem 0.7rem;
   border-radius: 5px;
+  cursor: pointer;
+  white-space: nowrap;
 }
 
 .tab.active {
-  font-weight: bold;
-  border-bottom: 3px solid dodgerblue;
+  font-weight: 600;
+  border-bottom: 3px solid var(--accent);
 }
 
-.upload-tab input {
-  display: none;
+.rename-button {
+  background: none;
+  border: none;
+  color: gold;
+  cursor: pointer;
+  margin-left: 5px;
+  font-size: 0.9rem;
+}
+.rename-button:hover {
+  color: white;
 }
 
 .input-section textarea {
@@ -60,49 +75,44 @@ body {
   border: 1px solid var(--border);
   color: var(--text);
   padding: 0.5rem;
+  border-radius: 6px;
+  font-family: monospace;
 }
 
 .buttons-row {
   margin: 1rem 0;
   display: flex;
-  gap: 10px;
   flex-wrap: wrap;
+  gap: 0.5rem;
 }
 
 button {
-  background: dodgerblue;
+  background: var(--accent);
   color: white;
   border: none;
-  padding: 0.4rem 1rem;
-  border-radius: 4px;
+  padding: 0.5rem 1.2rem;
+  border-radius: 6px;
+  font-size: 1rem;
   cursor: pointer;
 }
-
 button:hover {
-  background: deepskyblue;
+  background: var(--text);
+  color: var(--bg);
+  border: 1px solid var(--accent);
 }
 
 .output-panel {
   background: var(--panel);
   border: 1px solid var(--border);
   padding: 1rem;
-  margin-top: 1rem;
+  margin-top: 1.5rem;
+  border-radius: 8px;
 }
 
 pre {
   background: transparent;
   color: var(--text);
-  padding: 0.5rem;
-  overflow: auto;
+  overflow-x: auto;
+  white-space: pre-wrap;
+  word-break: break-word;
 }
-.rename-button {
-  background: none;
-  border: none;
-  color: #ffd700;
-  cursor: pointer;
-  margin-left: 4px;
-}
-.rename-button:hover {
-  color: #fff;
-}
-
