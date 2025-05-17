@@ -9,7 +9,9 @@ const BACKEND_URL = "https://python-code-backend.onrender.com";
 
 function App() {
   const [searchParams] = useSearchParams();
-  const [files, setFiles] = useState(() => JSON.parse(localStorage.getItem("files")) || { "main.py": '# Write your Python code here\nprint("Hello, world!")' });
+  const [files, setFiles] = useState(() =>
+    JSON.parse(localStorage.getItem("files")) || { "main.py": '# Write your Python code here\nprint("Hello, world!")' }
+  );
   const [entryFile, setEntryFile] = useState(() => localStorage.getItem("entryFile") || "main.py");
   const [input, setInput] = useState("");
   const [terminalOutput, setTerminalOutput] = useState("");
@@ -17,7 +19,8 @@ function App() {
   const [theme, setTheme] = useState(() => localStorage.getItem("theme") || "dark");
   const [executionTime, setExecutionTime] = useState(null);
 
-  const currentCode = files[entryFile] || "";
+  // Safely get current code, fallback to placeholder if undefined
+  const currentCode = files[entryFile] || "# Loading...";
 
   useEffect(() => {
     localStorage.setItem("files", JSON.stringify(files));
@@ -151,10 +154,32 @@ function App() {
 
       <div className="tabs-bar">
         {Object.keys(files).map((filename) => (
-          <div key={filename} className={`tab ${filename === entryFile ? "active" : ""}`} onClick={() => switchFile(filename)}>
+          <div
+            key={filename}
+            className={`tab ${filename === entryFile ? "active" : ""}`}
+            onClick={() => switchFile(filename)}
+          >
             {filename}
-            <button className="rename-button" title="Rename" onClick={(e) => { e.stopPropagation(); renameFile(filename); }}>✏️</button>
-            <button className="rename-button" title="Delete" onClick={(e) => { e.stopPropagation(); removeFile(filename); }}>❌</button>
+            <button
+              className="rename-button"
+              title="Rename"
+              onClick={(e) => {
+                e.stopPropagation();
+                renameFile(filename);
+              }}
+            >
+              ✏️
+            </button>
+            <button
+              className="rename-button"
+              title="Delete"
+              onClick={(e) => {
+                e.stopPropagation();
+                removeFile(filename);
+              }}
+            >
+              ❌
+            </button>
           </div>
         ))}
         <div className="tab upload-tab">
@@ -185,7 +210,9 @@ function App() {
       </div>
 
       <div className="buttons-row">
-        <button onClick={runCode} disabled={loading}>▶️ {loading ? "Running..." : "Run Code"}</button>
+        <button onClick={runCode} disabled={loading}>
+          ▶️ {loading ? "Running..." : "Run Code"}
+        </button>
         <button onClick={clearOutput}>🧹 Clear Output</button>
         <button onClick={shareCode}>🔗 Share</button>
       </div>
@@ -193,10 +220,16 @@ function App() {
       <div className="output-panel">
         <h4>
           Terminal Output
-          <button className="copy-btn" onClick={copyOutput} title="Copy Output"><FiCopy /></button>
-          {executionTime && <span className="exec-time"><FiClock /> {executionTime}s</span>}
+          <button className="copy-btn" onClick={copyOutput} title="Copy Output">
+            <FiCopy />
+          </button>
+          {executionTime && (
+            <span className="exec-time">
+              <FiClock /> {executionTime}s
+            </span>
+          )}
         </h4>
-        <pre>{terminalOutput}</pre>
+        <pre>{terminalOutput || "No output yet. Run your code to see results."}</pre>
       </div>
     </div>
   );
