@@ -1,22 +1,22 @@
+// Enhanced Python Code Playground - App.js
 import { useState, useEffect } from "react";
 import Editor from "@monaco-editor/react";
 import axios from "axios";
 import { useSearchParams } from "react-router-dom";
+import { FiCopy, FiClock } from "react-icons/fi";
 import "./App.css";
 
 const BACKEND_URL = "https://python-code-backend.onrender.com";
 
 function App() {
   const [searchParams] = useSearchParams();
-  const [files, setFiles] = useState(() => {
-    const saved = localStorage.getItem("files");
-    return saved ? JSON.parse(saved) : { "main.py": '# Write your Python code here\nprint("Hello, world!")' };
-  });
+  const [files, setFiles] = useState(() => JSON.parse(localStorage.getItem("files")) || { "main.py": '# Write your Python code here\nprint("Hello, world!")' });
   const [entryFile, setEntryFile] = useState(() => localStorage.getItem("entryFile") || "main.py");
   const [input, setInput] = useState("");
   const [terminalOutput, setTerminalOutput] = useState("");
   const [loading, setLoading] = useState(false);
   const [theme, setTheme] = useState(() => localStorage.getItem("theme") || "dark");
+  const [executionTime, setExecutionTime] = useState(null);
 
   const currentCode = files[entryFile] || "";
 
@@ -46,6 +46,16 @@ function App() {
     }
   }, []);
 
+  useEffect(() => {
+    const handler = (e) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === "Enter") {
+        runCode();
+      }
+    };
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, [files, input, entryFile]);
+
   const updateFile = (filename, content) => {
     setFiles((prev) => ({ ...prev, [filename]: content }));
   };
@@ -57,21 +67,14 @@ function App() {
   const addFile = () => {
     const newFilename = prompt("Enter new file name (with .py):", "untitled.py");
     if (!newFilename) return;
-    if (files[newFilename]) {
-      alert("File already exists!");
-      return;
-    }
+    if (files[newFilename]) return alert("File already exists!");
     setFiles((prev) => ({ ...prev, [newFilename]: "# New file\n" }));
     setEntryFile(newFilename);
   };
 
   const renameFile = (oldName) => {
     const newName = prompt("Enter new filename (with .py):", oldName);
-    if (!newName || newName === oldName) return;
-    if (files[newName]) {
-      alert("A file with that name already exists.");
-      return;
-    }
+    if (!newName || newName === oldName || files[newName]) return;
 
     setFiles((prev) => {
       const updated = { ...prev };
@@ -79,57 +82,46 @@ function App() {
       delete updated[oldName];
       return updated;
     });
-
-    if (entryFile === oldName) {
-      setEntryFile(newName);
-    }
+    if (entryFile === oldName) setEntryFile(newName);
   };
 
   const removeFile = (filename) => {
-    if (!window.confirm(`Are you sure you want to delete '${filename}'?`)) return;
+    if (!window.confirm(`Delete '${filename}'?`)) return;
     setFiles((prev) => {
       const newFiles = { ...prev };
       delete newFiles[filename];
       return newFiles;
     });
     if (entryFile === filename) {
-      const remainingFiles = Object.keys(files).filter((f) => f !== filename);
-      setEntryFile(remainingFiles.length ? remainingFiles[0] : "");
+      const remaining = Object.keys(files).filter((f) => f !== filename);
+      setEntryFile(remaining.length ? remaining[0] : "");
     }
   };
 
   const runCode = async () => {
     setLoading(true);
-    setTerminalOutput(`$ python ${entryFile}\n${input ? input.split("\n").map(line => `> ${line}`).join("\n") + "\n" : ""}`);
+    setExecutionTime(null);
+    const start = Date.now();
+    setTerminalOutput(`$ python ${entryFile}\n${input ? input.split("\n").map((l) => `> ${l}`).join("\n") + "\n" : ""}`);
     try {
-      const res = await axios.post(`${BACKEND_URL}/run`, {
-        files,
-        input,
-        entryFile,
-      });
-
+      const res = await axios.post(`${BACKEND_URL}/run`, { files, input, entryFile });
       const { stdout, stderr, exitCode } = res.data;
       const output =
         `${stdout || ""}` +
-        `${stderr ? `\nError:\n${stderr}` : ""}` +
+        `${stderr ? `\n\x1b[31mError:\n${stderr}\x1b[0m` : ""}` +
         `\n\n[Process exited with code ${exitCode}]`;
-
       setTerminalOutput((prev) => prev + output);
+      setExecutionTime(((Date.now() - start) / 1000).toFixed(2));
     } catch (err) {
       setTerminalOutput((prev) => prev + "\nError: " + err.message);
     }
     setLoading(false);
   };
 
-  const clearOutput = () => {
-    setTerminalOutput("");
-  };
+  const clearOutput = () => setTerminalOutput("");
 
   const shareCode = async () => {
-    const res = await axios.post(`${BACKEND_URL}/share`, {
-      files,
-      entryFile,
-    });
+    const res = await axios.post(`${BACKEND_URL}/share`, { files, entryFile });
     const url = `${window.location.origin}?id=${res.data.id}`;
     await navigator.clipboard.writeText(url);
     alert("✅ Link copied to clipboard:\n" + url);
@@ -138,16 +130,16 @@ function App() {
   const handleFileUpload = (e) => {
     const file = e.target.files[0];
     if (!file) return;
-
     const reader = new FileReader();
     reader.onload = (event) => {
       let filename = file.name.endsWith(".py") ? file.name : `${file.name}.py`;
-      const content = event.target.result;
-      setFiles((prev) => ({ ...prev, [filename]: content }));
+      setFiles((prev) => ({ ...prev, [filename]: event.target.result }));
       setEntryFile(filename);
     };
     reader.readAsText(file);
   };
+
+  const copyOutput = () => navigator.clipboard.writeText(terminalOutput);
 
   return (
     <div id="playground-container">
@@ -160,11 +152,7 @@ function App() {
 
       <div className="tabs-bar">
         {Object.keys(files).map((filename) => (
-          <div
-            key={filename}
-            className={`tab ${filename === entryFile ? "active" : ""}`}
-            onClick={() => switchFile(filename)}
-          >
+          <div key={filename} className={`tab ${filename === entryFile ? "active" : ""}`} onClick={() => switchFile(filename)}>
             {filename}
             <button className="rename-button" title="Rename" onClick={(e) => { e.stopPropagation(); renameFile(filename); }}>✏️</button>
             <button className="rename-button" title="Delete" onClick={(e) => { e.stopPropagation(); removeFile(filename); }}>❌</button>
@@ -198,15 +186,17 @@ function App() {
       </div>
 
       <div className="buttons-row">
-        <button onClick={runCode} disabled={loading}>
-          ▶️ {loading ? "Running..." : "Run Code"}
-        </button>
+        <button onClick={runCode} disabled={loading}>▶️ {loading ? "Running..." : "Run Code"}</button>
         <button onClick={clearOutput}>🧹 Clear Output</button>
         <button onClick={shareCode}>🔗 Share</button>
       </div>
 
       <div className="output-panel">
-        <h4>Terminal Output</h4>
+        <h4>
+          Terminal Output
+          <button className="copy-btn" onClick={copyOutput} title="Copy Output"><FiCopy /></button>
+          {executionTime && <span className="exec-time"><FiClock /> {executionTime}s</span>}
+        </h4>
         <pre>{terminalOutput}</pre>
       </div>
     </div>
