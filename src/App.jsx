@@ -104,6 +104,7 @@ function App() {
     setLoading(true);
     setExecutionTime(null);
     const start = Date.now();
+    // Show input lines prefixed with "> "
     setTerminalOutput(`$ python ${entryFile}\n${input ? input.split("\n").map((l) => `> ${l}`).join("\n") + "\n" : ""}`);
     try {
       const res = await axios.post(`${BACKEND_URL}/run`, { files, input, entryFile });
@@ -229,7 +230,18 @@ function App() {
             </span>
           )}
         </h4>
-        <pre>{terminalOutput || "No output yet. Run your code to see results."}</pre>
+        <pre>
+          {terminalOutput.split("\n").map((line, i) => {
+            if (line.startsWith("> ")) {
+              return (
+                <div key={i} className="input-line">
+                  {line}
+                </div>
+              );
+            }
+            return <div key={i}>{line}</div>;
+          })}
+        </pre>
       </div>
     </div>
   );
