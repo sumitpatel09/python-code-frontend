@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react"; 
+import { useState, useEffect } from "react";
 import Editor from "@monaco-editor/react";
 import axios from "axios";
 import { useSearchParams } from "react-router-dom";
@@ -8,16 +8,13 @@ const BACKEND_URL = "https://python-code-backend.onrender.com";
 
 function App() {
   const [searchParams] = useSearchParams();
-
   const [files, setFiles] = useState(() => {
     const saved = localStorage.getItem("files");
     return saved ? JSON.parse(saved) : { "main.py": '# Write your Python code here\nprint("Hello, world!")' };
   });
   const [entryFile, setEntryFile] = useState(() => localStorage.getItem("entryFile") || "main.py");
   const [input, setInput] = useState("");
-  const [stdout, setStdout] = useState("");
-  const [stderr, setStderr] = useState("");
-  const [exitCode, setExitCode] = useState(null);
+  const [terminalOutput, setTerminalOutput] = useState("");
   const [loading, setLoading] = useState(false);
 
   const currentCode = files[entryFile] || "";
@@ -29,6 +26,19 @@ function App() {
   useEffect(() => {
     localStorage.setItem("entryFile", entryFile);
   }, [entryFile]);
+
+  useEffect(() => {
+    const id = searchParams.get("id");
+    if (id) {
+      axios
+        .get(`${BACKEND_URL}/share/${id}`)
+        .then((res) => {
+          setFiles(res.data.files);
+          setEntryFile(res.data.entryFile);
+        })
+        .catch(() => alert("Failed to load shared code"));
+    }
+  }, []);
 
   const updateFile = (filename, content) => {
     setFiles((prev) => ({ ...prev, [filename]: content }));
@@ -64,28 +74,27 @@ function App() {
 
   const runCode = async () => {
     setLoading(true);
-    setStdout("Running...");
-    setStderr("");
-    setExitCode(null);
+    setTerminalOutput("Running...");
     try {
       const res = await axios.post(`${BACKEND_URL}/run`, {
         files,
         input,
         entryFile,
       });
-      setStdout(res.data.stdout || "");
-      setStderr(res.data.stderr || "");
-      setExitCode(res.data.exitCode);
+
+      const { stdout, stderr, exitCode } = res.data;
+      const output = `$ python ${entryFile}\n${input ? "> " + input.replace(/\n/g, "\n> ") + "\n" : ""}${
+        stdout || ""
+      }${stderr ? "\nError:\n" + stderr : ""}\n\n[Process exited with code ${exitCode}]`;
+      setTerminalOutput(output);
     } catch (err) {
-      setStderr("Error: " + err.message);
+      setTerminalOutput("Error: " + err.message);
     }
     setLoading(false);
   };
 
   const clearOutput = () => {
-    setStdout("");
-    setStderr("");
-    setExitCode(null);
+    setTerminalOutput("");
   };
 
   const shareCode = async () => {
@@ -97,35 +106,6 @@ function App() {
     await navigator.clipboard.writeText(url);
     alert("✅ Link copied to clipboard:\n" + url);
   };
-
-  const copyToClipboard = (text, label) => {
-    navigator.clipboard.writeText(text);
-    alert(`✅ Copied ${label} to clipboard!`);
-  };
-
-  const addInputFile = () => {
-    const filename = prompt("Enter input file name (e.g. data.txt):");
-    if (!filename) return;
-    if (files[filename]) {
-      alert("File already exists!");
-      return;
-    }
-    const content = prompt("Enter file content:");
-    setFiles((prev) => ({ ...prev, [filename]: content || "" }));
-  };
-
-  useEffect(() => {
-    const id = searchParams.get("id");
-    if (id) {
-      axios
-        .get(`${BACKEND_URL}/share/${id}`)
-        .then((res) => {
-          setFiles(res.data.files);
-          setEntryFile(res.data.entryFile);
-        })
-        .catch(() => alert("Failed to load shared code"));
-    }
-  }, []);
 
   const handleFileUpload = (e) => {
     const file = e.target.files[0];
@@ -155,37 +135,15 @@ function App() {
 
       <div className="tabs-bar">
         {Object.keys(files).map((filename) => (
-          <div
-            key={filename}
-            className={`tab ${filename === entryFile ? "active" : ""}`}
-          >
-            <button
-              className="tab-button"
-              onClick={() => switchFile(filename)}
-              title={`Switch to ${filename}`}
-            >
-              {filename}
-            </button>
-            <button
-              className="close-button"
-              onClick={() => removeFile(filename)}
-              title={`Close ${filename}`}
-            >
-              ×
-            </button>
+          <div key={filename} className={`tab ${filename === entryFile ? "active" : ""}`}>
+            <button className="tab-button" onClick={() => switchFile(filename)}>{filename}</button>
+            <button className="close-button" onClick={() => removeFile(filename)}>×</button>
           </div>
         ))}
-        <div className="tab add-tab" onClick={addFile} title="Add new file">
-          +
-        </div>
-        <label className="upload-tab" title="Upload file to input()">
+        <div className="tab add-tab" onClick={addFile}>+</div>
+        <label className="upload-tab">
           📄
-          <input
-            type="file"
-            accept=".txt"
-            style={{ display: "none" }}
-            onChange={handleFileUpload}
-          />
+          <input type="file" accept=".txt" style={{ display: "none" }} onChange={handleFileUpload} />
         </label>
       </div>
 
@@ -198,15 +156,8 @@ function App() {
       />
 
       <div className="input-section">
-        <label>
-          🔤 Input for <code>input()</code>:
-        </label>
-        <textarea
-          placeholder="Enter input values (one per line)"
-          rows={4}
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-        />
+        <label>🔤 Input for <code>input()</code>:</label>
+        <textarea rows={4} placeholder="Enter input values (one per line)" value={input} onChange={(e) => setInput(e.target.value)} />
       </div>
 
       <div className="buttons-row">
@@ -215,21 +166,8 @@ function App() {
         <button onClick={shareCode}>🔗 Share Code</button>
       </div>
 
-      <div className="output-panel">
-        <div>
-          <h3>📤 stdout:</h3>
-          <button onClick={() => copyToClipboard(stdout, "stdout")}>📋 Copy</button>
-          <pre className="stdout">{stdout}</pre>
-        </div>
-        <div>
-          <h3>❌ stderr:</h3>
-          <button onClick={() => copyToClipboard(stderr, "stderr")}>📋 Copy</button>
-          <pre className="stderr">{stderr}</pre>
-        </div>
-        <div>
-          <h3>🚪 Exit Code:</h3>
-          <pre className="exitcode">{exitCode !== null ? exitCode : loading ? "Running..." : ""}</pre>
-        </div>
+      <div className="terminal">
+        <pre>{terminalOutput}</pre>
       </div>
     </div>
   );
