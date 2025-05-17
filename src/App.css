@@ -168,3 +168,33 @@ pre {
   background: var(--accent);
   color: white;
 }
+
+input[type="file"] {
+  display: none;
+}
+
+
+.input-section textarea {
+  min-height: 100px;
+  resize: vertical;
+  background-color: var(--panel);
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 0.5rem;
+  border-radius: 6px;
+  font-family: var(--font-mono);
+}
+
+.output-panel pre {
+  min-height: 100px;
+  background-color: var(--panel);
+  padding: 1rem;
+  border-radius: 6px;
+  white-space: pre-wrap;
+  word-break: break-word;
+  font-family: var(--font-mono);
+  font-size: 0.95rem;
+  line-height: 1.5;
+  color: var(--text);
+}
+
