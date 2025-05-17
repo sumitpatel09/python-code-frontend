@@ -197,4 +197,11 @@ input[type="file"] {
   line-height: 1.5;
   color: var(--text);
 }
+/* Style input lines in terminal output (lines starting with > ) */
+.output-panel pre .input-line {
+  font-style: italic;
+  color: var(--success); /* greenish color consistent with your theme */
+  margin-bottom: 0.2rem;
+  user-select: text;
+}
 
