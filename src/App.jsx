@@ -1,4 +1,3 @@
-// Enhanced Python Code Playground - App.js
 import { useState, useEffect } from "react";
 import Editor from "@monaco-editor/react";
 import axios from "axios";
