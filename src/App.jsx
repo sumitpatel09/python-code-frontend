@@ -1,3 +1,5 @@
+// FULL UPDATED App.jsx CODE
+// Paste this into your src/App.jsx
 import { useState, useEffect } from "react";
 import Editor from "@monaco-editor/react";
 import axios from "axios";
