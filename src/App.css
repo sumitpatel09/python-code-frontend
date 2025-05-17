@@ -4,6 +4,10 @@
   --panel: #fff;
   --border: #ddd;
   --accent: dodgerblue;
+  --error: #ff4d4d;
+  --info: #444;
+  --success: #4caf50;
+  --font-mono: 'JetBrains Mono', monospace;
 }
 
 [data-theme='dark'] {
@@ -12,6 +16,9 @@
   --panel: #1e1e1e;
   --border: #444;
   --accent: deepskyblue;
+  --error: #ff6b6b;
+  --info: #ccc;
+  --success: #7cff7c;
 }
 
 body {
@@ -76,7 +83,7 @@ body {
   color: var(--text);
   padding: 0.5rem;
   border-radius: 6px;
-  font-family: monospace;
+  font-family: var(--font-mono);
 }
 
 .buttons-row {
@@ -107,6 +114,11 @@ button:hover {
   padding: 1rem;
   margin-top: 1.5rem;
   border-radius: 8px;
+  position: relative;
+}
+
+.output-panel h4 {
+  margin: 0 0 0.5rem;
 }
 
 pre {
@@ -115,4 +127,44 @@ pre {
   overflow-x: auto;
   white-space: pre-wrap;
   word-break: break-word;
+  font-family: var(--font-mono);
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
+.output-line {
+  margin-bottom: 0.2rem;
+}
+
+.output-line.error {
+  color: var(--error);
+  font-weight: bold;
+}
+
+.output-line.info {
+  color: var(--info);
+  font-style: italic;
+}
+
+.output-line.success {
+  color: var(--success);
+}
+
+.copy-btn {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 0.25rem 0.6rem;
+  border-radius: 5px;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.copy-btn:hover {
+  background: var(--accent);
+  color: white;
 }
