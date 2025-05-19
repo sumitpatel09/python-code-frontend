@@ -210,9 +210,7 @@ function App() {
       />
 
 
-<h1 style="
-    text-align: center;
-">🐍 Python Online IDE</h1>
+<h1 class="ide-title">🐍 Python Online IDE</h1>
 
 <div className="buttons-row" style={{ marginBottom: 8 }}>
           <button onClick={openFile}>Open File</button>
