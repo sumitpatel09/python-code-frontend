@@ -291,7 +291,7 @@ function App() {
                 marginRight: 4,
                 borderTopLeftRadius: 4,
                 borderTopRightRadius: 4,
-                backgroundColor:#007BFF,
+                backgroundColor:"#007BFF",
               }}
             >
               <span>{filename}</span>
